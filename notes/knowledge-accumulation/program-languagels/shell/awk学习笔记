@@ -1,0 +1,182 @@
+awk学习笔记：
+好文章推荐：http://5142926.blog.51cto.com/5132926/967141
+    http://my.oschina.net/willSoft/blog/39792
+    http://bbs.chinaunix.net/thread-2312439-1-1.html
+
+(一)print的使用：
+
+
+查找系统中拥有管理权限的用户信息：
+# awk -F: '{if($3==0) print}' /etc/passwd     精确匹配
+# awk -F: '{if($3~/0/) print}' /etc/passwd    不精确匹配
+
+查找系统中非管理员用户信息：(若只想显示用户名称，刚在print后加上$1即可)
+# awk -F: '{if($3!=0) print}' /etc/passwd   精确不匹配
+# awk -F: '{if($3!~/0/) print}' /etc/passwd 不精确不匹配
+
+取出系统中用户是root且uid是0的用户信息：
+# awk -F: '{if($1=="root"&&$3=="0")print}' /etc/passwd
+
+改变分隔符，用到了FS这个变量：
+#awk -v FS=: '{print $NF}' /etc/passwd  =  awk -F: '{print $NF}' /etc/passwd
+
+显示指定文件中的第一和第7个字段，字段间用“:”号隔开，用到了OFS这个变量：
+# awk -F: '{print $1,$7}' /etc/passwd | awk -v OFS=: '{print $1,$2}'
+
+（二）printf的使用：
+
+# awk -F: '{if($3==0) printf ("%-10s%s\n",$1,"admin");else printf ("%-10s%s\n",$1,"common user")}' /etc/passwd
+
+格式：awk [option] '{printf("format1format2",item1,item2)}' file
+要点
+1、与print命令的最大不同是，printf要指定format
+2、format与后边的item一一对应
+3、换行符要单独打印：\n
+
+
+format格式的指示符都以%开头，后跟一个字符：
+%% 表示显示%自身,用于转义
+%d 十进制有符号整数
+%u 十进制无符号整数
+%f 浮点数
+%s 字符串
+%c 单个字符
+%p 指针的值
+%e 指数形式的浮点数
+%x, %X 无符号以十六进制表示的整数
+%0 无符号以八进制表示的整数
+%g 自动选择合适的表示法
+\n 换行
+\f 清屏并换页
+\r 回车
+\t Tab符
+\xhh 表示一个ASCII码用16进表示,其中hh是1到2个16进制数
+说明:
+(1). 可以在"%"和字母之间插进数字表示最大场宽。
+例如: %3d 表示输出3位整型数, 不够3位右对齐。
+%9.2f 表示输出场宽为9的浮点数, 其中小数位为2, 整数位为6,小数点占一位, 不够9位右对齐。
+%8s 表示输出8个字符的字符串, 不够8个字符右对齐。
+如果字符串的长度、或整型数位数超过说明的场宽, 将按其实际长度输出.但对浮点数, 若整数部分位数超过了说明的整数位宽度, 将按实际整数位输出;若小数部分位数超过了说明的小数位宽度, 则按说明的宽度以四舍五入输出.
+另外, 若想在输出值前加一些0, 就应在场宽项前加个0。
+例如: %04d 表示在输出一个小于4位的数值时, 将在前面补0使其总宽度为4位。
+如果用浮点数表示字符或整型量的输出格式, 小数点后的数字代表最大宽度,小数点前的数字代表最小宽度。
+例如: %6.9s 表示显示一个长度不小于6且不大于9的字符串。若大于9, 则第9个字符以后的内容将被删除。
+
+(2). 可以在"%"和字母之间加小写字母l, 表示输出的是长型数。
+例如: %ld 表示输出long整数
+%lf 表示输出double浮点数
+(3). 可以控制输出左对齐或右对齐, 即在"%"和字母之间加入一个"-" 号可说明输出为左对齐, 否则为右对齐。
+例如: %-7d 表示输出7位整数左对齐
+%-10s 表示输出10个字符左对齐
+例子:
+df -h > dffile
+more dffile
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/hda1              15G  5.1G  8.7G  37% /
+none                  252M     0  252M   0% /dev/shm
+/dev/hda6              31G   12G   18G  40% /home
+/dev/hda3              15G  1.7G   13G  13% /usr
+/dev/hda2              15G  152M   14G   2% /var
+awk '{printf ("%12s\n",$1)}' dffile
+    Filesystem
+     /dev/hda1
+          none
+     /dev/hda6
+     /dev/hda3
+     /dev/hda2
+awk '{printf ("%-12s\n",$1)}' dffile
+Filesystem
+/dev/hda1
+none
+/dev/hda6
+/dev/hda3
+/dev/hda2
+例子:
+echo 1.7 > 2
+awk '{printf ("%d\n",$1)} 2
+1
+awk '{printf ("%f\n",$1)}' 2
+1.700000
+awk '{printf ("%3.1f\n",$1)}' 2
+1.7
+awk '{printf ("%4.1f\n",$1)}' 2
+1.7
+awk '{printf ("%e\n",$1)}' 2
+1.700000e+00
+
+
+取出系统中用户名与shell路径，如果用户名匹配到root，刚按照规定的格式输出这个用户的用户名与shell：
+# awk -F: 'BEGIN{print "USERNAME  SHELL"}{name=$1; shell=$7; if(name~/root/) printf("%-10s%s\n",name,shell)}' /etc/passwd
+如果对输出格式无要求，可以把printf("%-10s%s\n",name,shell)更换为print name,shell
+
+计算当前目录下各文件的大小及全部文件大小的总和：
+# ls -l|awk '/^[^d]/{printf("%-20s%s\n",$9,$5)}{tot+=$5}END{print "total kb:"tot}'
+
+
+内置变量:
+ARCC                                      命令行参数个数
+ARGV                                      命令行参数排列
+ENVIRON                                   支持队列中系统环境变量的使用
+FNR                                       浏览文件的记录数
+FS                                        置顶分隔符，等价于-F
+NF                                        浏览记录的域的个数
+NR                                        已读的记录数(行数)
+OFS                                       输出域分隔符
+ORS                                       输出记录分隔符
+RS                                        控制记录分隔符
+这里要注意“NF”与“NR”的区别
+
+
+(三)常见的模式匹配类型：
+
+1、regexp：正则表达式，模式为/regular expression/
+# awk -F: '/bash/{print $0}' /etc/passwd    处理流程：当指定文件中能匹配到bash字符串时，才执行后边{print $0}
+
+2、表达式，用操作符连接起来的
+# awk -F: '$3>=500{print $1}' /etc/passwd
+# awk -F: '$3~0{print $0}' /etc/passwd    如果匹配文件中的第三个字段有0，刚把这一行都显示出来.这是不精确的匹配，可以匹配0，10等
+# awk -F: '$3==0{print $0}' /etc/passwd   7这里是精确匹配
+
+3、ranges：指定匹配范围
+# cat /etc/fstab | awk '/tmpfs/,/sysfs/{print}'
+
+4、BEGIN/END
+以打印报头报尾的方式，取出系统中的所有用户及UID:
+# awk -F: 'BEGIN{print "USER     UID"}{printf("%-10s%s\n",$1,$3)}END{print "This is all users!"}' /etc/passwd
+
+（四）循环词句的使用
+
+1、while
+语法： while (condition){statement1;statement2;……}
+# awk -F: '{i=1;while (i<=3){print $i;i++}}' /etc/passwd   只显示前三个字段
+# awk -F: '{i=1;while (i<=NF) {print $i;i+=2}}' /etc/passwd  只显示奇数字段
+2、do……while  先执行一次，再判断
+语法： do {statement1,statement2,……} while (condition)
+# awk -F: '{i=1;do {print $i;i++} while (i<=3)}' /etc/passwd
+3、for  对循环次数已知的循环
+# awk -F: '{for (i=1;i<=3;i++) print $i}' /etc/passwd  显示前三个字段
+# awk -F: '{for(i=1;i<=NF;i+=2) print $i}' /etc/passwd 显示奇数字段
+
+（五）awk中使用数组
+
+# awk 'BEGIN{A["X"]="XX";A["Y"]="YY";print A["X"],A["Y"]}'  打印出XX  YY
+# awk 'BEGIN{A[1]="XX";A[2]="YY";print A[1],A[2]}'
+
+for (A in ARRAY){print ARRAY[A]}  用变量的方式打印出数组中的每一个元素
+# awk 'BEGIN{A["X"]="XX";A["Y"]="YY";for (B in A) print A[B]}'   这里的B相当于数组A的下标
+# netstat -ant | awk '$1~/tcp/{A[$NF]++}END{for (B in A) print B,A[B]}' 此语句是统计系统上基于tcp协议的监听情况（如果匹配第一个域中是tcp的，那么把这一行的域的个数NF记录成一个数组A[$NF],并把这样的数组个数作加法，这样一直计算到最后一行后，那么内存空间中就存放了netstat -ant显示信息的最后一个字段和该字段出现的次数。然后设定变量B来输出相应信息）
+# netstat -ant | awk '$1~/tcp/{A[$NF]++}END{for (B in A) printf ("%-11s:%s\n",B,A[B])}'
+
+# awk '{IP[$1]++}END{for (M in IP) print M,IP[M]}' access_log    统计apache访问日志的各ip的访问次数
+# cat access_log | awk ‘{print $1}’ | uniq -c|sort -rn|head -10  = cat access_log | awk ‘{print $1}’ | uniq -c | tail -10
+从高到低列出前十名访问服务的IP地址
+
+
+gsub函数：
+# awk -F: '{gsub(/^root/,"test");print}' user
+
+# awk 'gsub(/^root/,"netseek") {print}' user
+
+
+
+awk '{total+=$1}END{print total}' 1.txt

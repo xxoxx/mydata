@@ -1,0 +1,179 @@
+
+阿里资深运维 罗伟分享
+
+                                               《牛刀小试浅谈做人做事‍》
+
+你有想过awk有这般强大么‍
+
+
+我博客维护脚本的功能主要：启动、停止博客（MySQL、PHP-FPM、Nginx），数据库数据和访问日志打包备份、Wordpress的文件打包备份、把恶意扫描的IP加入防火墙黑名单、过滤出人类访问的记录。
+我的VPS的系统是Ubuntu 12.04。
+
+启动、停止博客脚本
+
+startBlog.sh，这个脚本还加到开机启动脚本里，万一VPS重启了也会自动启动博客。
+log=/home/coderbee/blog/startBlogLog.log
+date >> $log
+/usr/share/mysql/bin/mysql.server start && {
+        /usr/share/php5/sbin/php-fpm && {
+                /usr/share/nginx/sbin/nginx && echo "start blog ok" >> $log ||
+                echo "start nginx failed " >> $log ;
+        };
+} || { echo "start mysql failed ."  >> $log ; }
+shutDownBlog.sh，这个脚本主要是在刚开始搭建博客时用，现在基本不用。
+/usr/share/mysql/bin/mysql.server stop 2>&1 >/dev/null
+kill -quit `cat /usr/share/php5/var/run/php-fpm.pid` 2>&1 >/dev/null
+/usr/share/nginx/sbin/nginx -s stop 2>&1 >/dev/null
+
+数据库数据和访问日志打包备份
+
+cronday.sh，这个脚本每天凌晨调度执行。
+export JAVA_HOME='/usr/share/jdk1.7.0_21'
+export PATH=$PATH:$JAVA_HOME/bin
+
+blog=/home/coderbee/blog/
+bakDir=${blog}dataBak
+#  用mysqldump命令把博客的数据库导出来，然后用vpsBack.jar上传的Dropbox，vpsBack.jar是用Dropbox的API写的一个小工具，只有简单的上传功能。
+/usr/share/mysql/bin/mysqldump -u wpblog -p'password' blog > ${bakDir}/blog-bak.sql.tmp 2>/dev/null &&
+ mv ${bakDir}/blog-bak.sql.tmp ${bakDir}/blog-bak.sql  &&
+ java -jar ${blog}vpsBack.jar upload vpsBak4coderbee/db/`date -d"yesterday" +"%Y%m%d"`/ ${bakDir}/blog-bak.sql &&
+ echo "backup sql to dropbox ok ."
+
+
+#  一个月的访问日志放在以月份命名的文件夹下，同一年的月份的文件夹放在以年命名的文件夹下。
+monDir=${bakDir}/weblog/$(date -d"yesterday" +"%Y")/$(date -d"yesterday" +"%m")
+dayPath=$(date -d"yesterday" +"%d").log
+[ -d "${monDir}" ] || mkdir -p ${monDir}
+
+
+logDir=/usr/share/nginx/logs
+
+#  nginx日志拷贝、清理、切换
+cd $logDir && cp access.log ${dayPath} && :> access.log &&
+#  通知nginx重新打开日志文件
+kill -USR1  `cat /usr/share/nginx/logs/nginx.pid` &&
+
+
+#  打包访问日志
+tar -czf "${dayPath}.tar.gz" "${dayPath}" &&
+
+#  备份访问日志
+rm -f ${dayPath} && mv -f "${dayPath}.tar.gz" ${monDir} &&
+chown -R coderbee:appgroup ${bakDir} && echo "backup web log down"
+
+WordPress的文件打包备份
+
+cronweek.sh，这个脚本会打包Wordpress的文件，并上传到Dropbox。因为写博客上传的多媒体和Wordpress插件一般会放在这个目录下，所以每周备份一次。
+cd /var/www/
+
+export JAVA_HOME="/usr/share/jdk1.7.0_21"
+export PATH=$PATH:$JAVA_HOME/bin
+
+fname="web-`date +"%Y%m%d" -d"yesterday"`.gz"
+tar czf $fname wordpress/ &&
+ java -jar /home/coderbee/blog/vpsBack.jar upload vpsBak4coderbee/web/ $fname &&
+ rm $fname && echo "backup web done ."
+
+过滤出人类访问的记录
+
+先说下我的nginx的日志记录格式：
+'$remote_addr - $remote_user [$time_local] "$request" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for"';
+比如这是一条：
+122.194.20.145 - - [03/Aug/2013:18:13:49 +0800] "GET /index.php/algorithm/20130801/343 HTTP/1.1" 200 10575 "http://news.dbanotes.net/newest" "Mozilla/5.0 (iPad; CPU OS 6_0_2 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A550 Safari/8536.25" "-"
+这个只是很简单的日志处理脚本，只处理今天的博客文章和首页的访问日志，根据User-Agent过滤。
+log="/usr/share/nginx/logs/access.log"
+
+awk -F"\"" '$2 ~ /(GET \/ HTTP.*)|(\/index.php\/[a-zA-Z]*\/[0-9]+\/[0-9]+ .*)|(\/html5\/[a-zA-Z0-9]+.html .*)/ && $6 !~/(http:\/\/|Java|robot|.com|Wget|PHP|Reeder|Spider|(^-$)|ips-agent|@)/ {print $0}' $log
+还有按refer统计：
+. humanVisit.sh | awk -F"\"" '{print $2, $4}' | cut -d" " -f2,4 | sort -k 1 | uniq -c
+访问最多的url：
+. humanVisit.sh | awk -F"\"" '{print $2}' | cut -d" " -f2 | sort | uniq -c
+
+把恶意扫描的IP加入防火墙黑名单
+
+这个脚本是最近添加的，主要是把那些访问日志里4xx状态、访问的URL看起来是恶意的IP加入防火墙过滤掉。由cron没小时调度执行一次。
+ipfilter.sh
+cd /home/coderbee/blog/
+sortIps=sortIpx
+
+#  过滤出访问日志里4xx状态、访问的URL里包含 admin|Admin|scripts且以php后缀结尾的IP
+awk -F'"' '$3~/4.. [0-9]+/ && $2 ~ /GET \/.*(admin|Admin|scripts).+(index|setup)\.php/ {print $0}' /usr/share/nginx/logs/access.log | awk '{print $1}' >> evilIP
+
+sort evilIP | uniq > evilIP.tmp && mv evilIP{.tmp,}
+
+iptables -F INPUT
+
+#  把整个IP/24段加入黑名单
+cut -d. -f1-3 ips evilIP | sort | uniq > $sortIps
+for i in $sortIps
+do
+    while read line
+    do
+        if [[ ! -z $line ]]; then
+           ip=$line/24
+           iptables -t filter -I INPUT -s $ip -j DROP
+        fi
+    done < $i
+done
+
+rm $sortIps
+
+cron调度
+
+1  0  *   *  * /home/coderbee/blog/cronday.sh 2>&1 >> /home/coderbee/blog/cronlog
+1  4  *   *  1 /home/coderbee/blog/cronweek.sh 2>&1 >> /home/coderbee/blog/cronlog
+1  *  *   *  * /home/coderbee/blog/ipfilter.sh 2>&1 >> /home/coderbee/blog/ipfilterlog
+
+小结
+
+这里并没有复杂高深的东西，基本都是 AWK处理文本、sort排序、uniq去重、cut筛选字段、tar进行打包压缩、用cron定时调度，还用了shell的命令条件执行、命令组合、重定向等。
+这也体现这Linux系统强大之一：提供大量简单的基本命令，用shell把这些命令粘合起来就可以实现更复杂、强大的功能。
+我也会继续探索Linux shell的更多玩法，尽可能让手工操作转为自动化的。
+要Linux下编辑shell，首先要掌握一个命令行下的文本编辑器，一般就是Vi了，我之前是按照 酷壳的这篇文章 《简明 Vim 练级攻略》 http://coolshell.cn/articles/5426.html，练了两个星期才基本上上手。
+关于博客搭建过程可见： http://coderbee.net/index.php/notes/20130620/254
+
+后续
+
+20130810：前面的日志统计脚本 .humanVisit 仍然需要其他命令来处理，刚才把awk实现了那些功能，就简单多了：
+#!/bin/bash
+
+log="/usr/local/nginx/logs/access.log"
+
+awk -F"\"" '$2 ~ /(GET \/ HTTP.*)|(\/index.php\/[a-zA-Z]*\/[0-9]+\/[0-9]+ .*)|(\/html5\/[a-zA-Z0-9]+.html .*)/ && $6 !~
+/(http:\/\/|Java|robot|.com|Wget|PHP|Reeder|Spider|(^-$)|ips-agent|@|Python|bot|NING)/ {
+    if ( $4 ~ /http[s]*:\/\// ){
+        if ( $4 ~ /http:\/\// ){
+                refer=substr($4, 8)
+        } else {
+                refer=substr($4, 9)
+        }
+        refer=substr($4, 8)
+        refer=substr(refer, 1, index(refer, "/") - 1)
+        refers[refer]++
+    } else {
+        refers[$4]++
+    }
+
+    paper=substr($2, 5)
+    paper=substr(paper, 1, index(paper, " ")-1)
+    papers[paper]++
+}
+
+function printStatistic(msg, arr) {
+    sum=0
+    printf ("%s\n", msg)
+    for (i in arr) {
+        sum+=arr[i]
+        printf("%6d   %s\n", arr[i], i) | "sort"
+    }
+    close("sort")
+    printf ("total count: %d\n", sum)
+}
+
+END {
+    printStatistic("visit refers:", refers)
+    print ""
+    printStatistic("visit papers:", papers)
+}
+' $log
+用到了AWK的不少东西，效果不错。
