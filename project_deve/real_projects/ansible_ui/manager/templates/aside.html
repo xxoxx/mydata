@@ -1,0 +1,23 @@
+{% load staticfiles %}
+<aside>
+    <div id="sidebar" class="nav-collapse ">
+        <!-- sidebar menu start-->
+        <ul class="sidebar-menu" id="nav-accordion">
+            <p class="centered"><a href="profile.html"><img src="/static/assets/img/ui-sam.jpg" class="img-circle"
+                                                            width="60"></a></p>
+            <h5 class="centered">Marcel Newman</h5>
+            <li class="sub-menu">
+                <a href="javascript:;">
+                    <i class="fa fa-th"></i>
+                    <span>版本发布系统</span>
+                </a>
+                <ul class="sub">
+                    {% block environment %}
+                        <li><a href="{% url 'manager:pre_release' %}">预发布环境</a></li>
+                        <li><a href="#">现网环境</a></li>
+                    {% endblock %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+</aside>

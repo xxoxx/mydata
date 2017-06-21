@@ -1,0 +1,192 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>预发布</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'assets/css/bootstrap.css' %}" rel="stylesheet">
+    <!--external css-->
+    <link href="{% static 'assets/font-awesome/css/font-awesome.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/zabuto_calendar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/js/gritter/css/jquery.gritter.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/lineicons/style.css' %}">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/style-responsive.css' %}" rel="stylesheet">
+
+    <script src="{% static 'assets/js/chart-master/Chart.js' %}"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+{#    test#}
+      <!--样式文件-->
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables-1.10.13/media/css/jquery.dataTables.min.css' %}">
+    <!--jquery js-->
+    <script src="{% static 'DataTables-1.10.13/media/js/jquery.js' %}"></script>
+    <!--DataTables 核心 js-->
+    <script src="{% static 'DataTables-1.10.13/media/js/jquery.dataTables.min.js' %}"></script>
+{#      test#}
+</head>
+<body>
+
+<aside>
+    <div id="sidebar" class="nav-collapse ">
+        <!-- sidebar menu start-->
+        <ul class="sidebar-menu" id="nav-accordion">
+            <li class="sub-menu">
+                <a href="javascript:;">
+                    <i class="fa fa-th"></i>
+                    <span>版本发布</span>
+                </a>
+                <ul class="sub">
+                    <li><a href="{% url 'manager:pre' %}">预发布环境</a></li>
+                    <li><a href="#">现网环境</a></li>
+                </ul>
+        </ul>
+    </div>
+</aside>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>序号</th>
+        <th>IP地址</th>
+        <th>所属项目组</th>
+        <th>项目名称</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th></th>
+        <th>
+            <select name="select_project_group">
+                {% for host in pres %}
+                    <option value="{{ host.project_group }}"> {{ host.project_group }}</option>
+                {% endfor %}
+            </select>
+        </th>
+        <th>
+            <select name="select_project_name">
+                {% for host in pres %}
+                    <option value="{{ host.project_name }}">{{ host.project_name }}</option>
+                {% endfor %}
+            </select>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for host in pres %}
+        <tr>
+            <td>{{ host.id }}</td>
+            <td>{{ host.ip_address }}</td>
+            <td>{{ host.project_group }}</td>
+            <td>{{ host.project_name }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+<table id="example" class="display">
+    <thead>
+    <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>001</td>
+        <td>name1</td>
+        <td>2323</td>
+    </tr>
+    <tr>
+        <td>002</td>
+        <td>name2</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>003</td>
+        <td>name3</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>004</td>
+        <td>name4</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>005</td>
+        <td>name5</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>006</td>
+        <td>name6</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>007</td>
+        <td>name7</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>008</td>
+        <td>name8</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>009</td>
+        <td>name9</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>010</td>
+        <td>name10</td>
+        <td>4612</td>
+    </tr>
+    <tr>
+        <td>011</td>
+        <td>name11</td>
+        <td>4612</td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    $(function () {
+        $('#example').DataTable({
+            columns: [
+                {data: "firstname"},
+                {data: "lastname"},
+                {data: "phone"}
+            ]
+        });
+    })
+</script>
+</body>
+</html>

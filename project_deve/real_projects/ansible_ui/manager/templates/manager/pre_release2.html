@@ -1,0 +1,45 @@
+{% extends 'manager/base.html' %}
+{% load staticfiles %}
+{% block self_head_css_js %}
+    <!--DataTables 核心 js-->
+    <script type="text/javascript" charset="utf8"
+            src="{% static 'DataTables-1.10.13/media/js/jquery.dataTables.min.js' %}"></script>
+    {# datatables插件 end     #}
+{% endblock %}
+
+{% block main_comtent %}
+    <table id="hosts_info" class="display">
+        <thead>
+        <tr>
+            <th>项目组</th>
+            <th>项目名称</th>
+            <th>服务器IP</th>
+            <th>服务状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for pre in pres %}
+            <tr>
+                <td>{{ pre.project_group }}</td>
+                <td>{{ pre.project_name }}</td>
+                <td>{{ pre.ip_address }}</td>
+                <td>{{ pre.service_status }}</td>
+                <td>
+                    <button id="service_start" type="button" class="btn btn-success" onclick="start_service()">启动
+                    </button>
+                    <button id="service_restart" type="button" class="btn btn-info" onclick="restart_service()">重启
+                    </button>
+                    <button id="service_stop" type="button" class="btn btn-warning" onclick="stop_service()">停止</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#hosts_info').DataTable();
+            });
+        </script>
+    </table>
+{% endblock %}
+
