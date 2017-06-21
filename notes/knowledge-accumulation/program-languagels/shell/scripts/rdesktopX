@@ -1,0 +1,21 @@
+#!/bin/bash
+#Autor: Neal
+#Date: 2016-07-20
+#Version 1.0
+
+
+# sudo apt-get install dialog
+
+DIA=dialog
+LOG_FILE=~/.rdesktop-gui.log
+DEFAULT_HOST=(
+10.0.11.96:3389
+)
+PROMPT="请输入要连接的主机IP地址\n进入/退出全屏，按\"Ctrl+Alt+回车\""
+HOST=$($DIA --stdout --inputbox "$PROMPT" 10 40 $DEFAULT_HOST )
+if [ $? -ne 0 ]; then
+    exit 0
+fi
+echo `date`": $HOST" >> $LOG_FILE
+rdesktop -a 24 -r disk:temp=/home/neal/work/not-sync/upgrade_logs $HOST -g1280x960
+

@@ -1,0 +1,43 @@
+#!/bin/bash
+#Autor: Neal
+#Date: 2016-07-20
+#Version 1.0
+
+case "$1" in
+
+start)
+    # dial vpn
+    sudo pptpsetup --create myvpn --server us.guozonglin.cn --username zhaocj --password zhaocj123 --encrypt --start && sleep 2 || echo "dial vpn failure!"
+    
+    # configure route
+    if [ $? -eq 0 ];then
+        sudo ip route del default
+        sudo ip route add default dev ppp0
+    fi
+    # test
+    ping -c 2 www.google.com
+    ;;
+
+stop)
+    # stop vpn
+    sudo poff myvpn
+    sleep 3
+    
+    # configure route
+    if [ $? -eq 0 ];then
+        sudo ip route add default via 172.20.0.1
+    else
+        echo "no pppd is running"
+        exit 1
+    fi
+
+    # test
+    ping -c 2 www.baidu.com
+    ;;
+
+
+*)
+    echo $"Usage: $prog {start|stop}"
+    ;;
+
+esac
