@@ -1,0 +1,8 @@
+---
+- name: 拷贝logs_clear.sh日志清理脚本到目标主机
+  copy: src=/home/ansible/playbooks/initialize/deployment_environment/roles/dep_tomcat-7.0.54/files/bin/logs_clear.sh dest={{ ansible_env.HOME}}/bin mode=0700
+  tags: copy_logs_clear.sh
+
+- name: 设置日志清理计划任务，每小时执行一次
+  cron: name='logs clear' minute=0 job='/bin/bash {{ ansible_env.HOME }}/bin/logs_clear.sh 60 {{ log_days }} {{ bak_num }} > /dev/null 2>&1 &'
+  tags: cron_logs_clear

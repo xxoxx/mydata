@@ -1,0 +1,19 @@
+- name: debian add gateway
+  command: route add default gw 172.31.0.1
+  when: ansible_default_ipv4.gateway is not defined and ansible_distribution == "Debian" and ansible_distribution_major_version == "8" and env == "production"
+  tags: add_gateway_debian
+
+- name: centos add gateway
+  command: route add default gw 172.31.0.1
+  when: ansible_default_ipv4.gateway is not defined and ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" and env == "production"
+  tags: add_gateway_centos
+
+- name: debian add gateway
+  command: route add default gw 172.31.0.254
+  when: ansible_default_ipv4.gateway is not defined and ansible_distribution == "Debian" and ansible_distribution_major_version == "8" and env == "pre"
+  tags: add_gateway_debian
+
+- name: centos add gateway
+  command: route add default gw 172.31.0.254
+  when: ansible_default_ipv4.gateway is not defined and ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" and env == "pre"
+  tags: add_gateway_centos

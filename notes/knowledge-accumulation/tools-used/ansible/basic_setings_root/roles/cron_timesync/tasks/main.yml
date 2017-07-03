@@ -1,0 +1,11 @@
+---
+#设置服务器时间同步频率
+- name: 现网时间同步设置
+  cron: name='rsync time' minute=01 hour='23,06,13' user=root job='/usr/sbin/ntpdate -u 172.31.3.1 > /tmp/cron_time.txt'
+  when: env == "production"
+  tags: rsync_time
+
+- name: 预发布时间同步设置
+  cron: name='rsync time' minute=01 hour='23,06,13' user=root job='/usr/sbin/ntpdate -u 172.31.1.100 > /tmp/cron_time.txt'
+  when: env == "pre"
+  tags: rsync_time

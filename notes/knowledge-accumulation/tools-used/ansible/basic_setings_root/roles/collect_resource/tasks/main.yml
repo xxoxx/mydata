@@ -1,0 +1,19 @@
+---
+- name: copy shell to remote host
+  copy: src=scan_resource.sh dest=/tmp
+  tags: cp_shell
+
+- name: run shell
+  shell: /bin/bash /tmp/scan_resource.sh > /tmp/{{ ansible_fqdn }}.txt
+  tags: exec_shell
+
+- name: back dir
+  file: path=/tmp/collect state=directory
+
+- name: fetch txt
+  fetch: src=/tmp/{{ ansible_fqdn }}.txt dest=/tmp/collect/ flat=yes
+  tags: pull_txt
+
+
+# cd /tmp/collect
+# for i in `ls ./`;do cat $i >> /tmp/res.txt && echo -e '\n' >> /tmp/res.txt;done

@@ -1,0 +1,11 @@
+---
+#修改root密码，加密密码生成命令：openssl passwd -1 -salt `openssl rand -hex 4`
+- name: 现网更改root密码
+  user: name=root password=$6$b3oj3qvr$XBy/KInIkrwGFh71tzR2K0aJy.BAiZZlUtSFc6ZrQEZ8Fohel.HxnyFEVRPOEYzGSbND/jjA0liuYDIBtLb5i1
+  when: env == "production"
+  tags: chg_root_passwd
+
+- name: 预发布更改root密码
+  user: name=root password=$6$nnE.Kuz/$pZ8TyVNrTBHRSz4zZIoaMQun/syfKg5kiWJ5tUQuK5Cp9svagmN.ElINtToXGkylZV9WymTJ5kfwA8LeEzWX71
+  when: env == "pre"
+  tags: chg_root_passwd

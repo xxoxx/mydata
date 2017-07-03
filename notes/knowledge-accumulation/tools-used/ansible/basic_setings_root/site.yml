@@ -1,0 +1,35 @@
+---
+#此脚本功能：用root用户完成系统一些基础性功能的检测和修改
+#确保远程主机有cron包、服务已启用：ansible-playbook site.yml -i hosts -k -e "host=mod_server act=cron_service"
+#安装软件包：ansible-playbook site.yml -i hosts -k -e "host=mod_server act=install_pkg"
+
+#预发布
+#设置时间同步任务：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=timesync env=pre"
+#修改root密码：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=chg_passwd env=pre"
+#增加默认路由：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=add_route env=pre"
+
+#现网
+#设置时间同步任务：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=timesync env=production"
+#修改root密码：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=chg_passwd env=production"
+#增加默认路由：ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=add_route env=production"
+
+##########不分预发布、现网环境#######################
+#收集host的系统资源: ansible-playbook site.yml -i hosts -k -e "host=mod_server  act=collect"
+
+
+- hosts: "{{ host }}"
+  remote_user: root
+  roles:
+
+    #确保cron包安装及服务启动
+    - { role: cron_service,when: "act == 'cron_service'" }
+    #设置时间同步任务
+    - { role: cron_timesync,when: "act == 'timesync'" }
+    #修改root用户密码
+    - { role: chg_root_passwd,when: "act == 'chg_passwd'" }
+    #安装软件包
+    - { role: install_pkg,when: "act == 'install_pkg'" }
+    #增加默认路由
+    - { role: add_route,when: "act == 'add_route'" }
+    #收集host的系统资源
+    - { role: collect_resource,when: "act == 'collect'"}

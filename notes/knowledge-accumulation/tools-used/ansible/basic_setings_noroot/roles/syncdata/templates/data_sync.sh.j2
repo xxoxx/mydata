@@ -1,0 +1,29 @@
+#!/bin/bash
+#Program: data rsync
+#Author: Neal
+#E_mail: 419775240@qq.com
+#Date: 2016-1-11
+#Version 1.0
+#使用说明：/bin/bash data_sync.sh 1000，接收一个速率控制的参数，单位为KBPS
+
+Local_Ip={{ ansible_eth0.ipv4.address }}
+Rsync_Server_Ip=172.31.0.244
+
+#需要根据实际情况修改,Modle_Name需要在172.31.0.244的/home/rsync/logstore下创建
+Log_Home=/home/{{ ansible_ssh_user }}/{{ instance_name }}/logs
+Project_Bak=/home/{{ ansible_ssh_user }}/bak
+Modle_Name=mcms-vms
+Rsync_Server_Path=webapp_log_backup
+
+#cat <<- EOF >> $Project_Bak/rsync.passwd
+#       rsync:qwert123!
+#EOF
+#chmod 600 $Project_Bak/rsync.passwd
+
+#根据实际情况增减需要备份的目录
+/usr/bin/rsync -auvzP --bwlimit=$1 --password-file=$Project_Bak/rsync.passwd ${Log_Home} rsync@${Rsync_Server_Ip}::${Rsync_Server_Path}/${Modle_Name}/${Local_Ip}
+/usr/bin/rsync -auvzP --bwlimit=$1 --password-file=$Project_Bak/rsync.passwd ${Project_Bak} rsync@${Rsync_Server_Ip}::${Rsync_Server_Path}/${Modle_Name}/${Local_Ip}
+
+
+#有文件需要排除时
+#/usr/bin/rsync -auvzP --bwlimit=$1 --exclude=appendonly.aof --password-file=$Project_Bak/rsync.passwd ${Log_Home} rsync@${Rsync_Server_Ip}::${Rsync_Server_Path}/${Modle_Name}/${Local_Ip}

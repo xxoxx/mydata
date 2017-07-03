@@ -1,0 +1,4 @@
+---
+- name: 日志备份任务
+  cron: name='logs back' minute={{ M }} hour={{ H }} job='/bin/bash {{ ansible_env.HOME }}/bin/data_sync.sh {{ bwlimit }} > /dev/null 2>&1 &'
+  tags: logs_rsync

@@ -1,0 +1,26 @@
+---
+- name: update source cache for Debian
+  apt: update_cache=yes cache_valid_time=3600
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version == "8"
+  tags: update_source
+
+- name: install lrzsz debian
+  apt: name={{ item }} state=present
+  with_items:
+      #- lrzsz
+      #- ntpdate
+      #- sudo
+      - cronolog
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version == "8"
+
+#- name: update source cache for Centos
+#  yum: update_cache=yes
+#  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+
+- name: install lrzsz centos
+  yum: name={{ item }} state=present
+  with_items:
+      - lrzsz
+      - ntpdate
+      - sudo
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"

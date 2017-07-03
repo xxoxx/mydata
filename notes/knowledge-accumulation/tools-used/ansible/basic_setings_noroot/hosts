@@ -1,0 +1,2 @@
+[mod_server]
+172.31.0.159    ansible_ssh_user=tomcat

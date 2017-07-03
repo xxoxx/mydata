@@ -1,0 +1,17 @@
+---
+- name: create bak
+  file: path=/{{ ansible_env.HOME }}/bak state=directory
+  tags: create_bak
+
+- name: create bin
+  file: path=/{{ ansible_env.HOME }}/bin state=directory
+  tags: create_bin
+
+- name: copy rsync.passwd
+  copy: src=rsync.passwd dest=/{{ ansible_env.HOME }}/bak mode=600
+  tags: copy_rsync.passwd
+
+- name: copy data_sync.sh.j2
+  template: src=data_sync.sh.j2 dest=/{{ ansible_env.HOME }}/bin/data_sync.sh
+  tags: copy_data_sync.sh
+

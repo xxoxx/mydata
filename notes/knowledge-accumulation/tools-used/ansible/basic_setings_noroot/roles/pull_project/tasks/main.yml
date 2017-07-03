@@ -1,0 +1,11 @@
+---
+- name: delete  remote bz2 file
+  file: path=/tmp/{{ ansible_fqdn }}.tar.bz2 state=absent
+
+- name: compress project
+  args:
+    chdir: "/home/tomcat/tomcat-7.0.54"
+  shell: tar cjf /tmp/{{ ansible_fqdn }}.tar.bz2 webapps
+
+- name: fetch bz2
+  fetch: src=/tmp/{{ ansible_fqdn }}.tar.bz2 dest=/tmp/projects/ flat=yes

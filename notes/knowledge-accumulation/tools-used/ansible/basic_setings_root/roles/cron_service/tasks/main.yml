@@ -1,0 +1,30 @@
+---
+#安装计划任务包，确保服务已启用
+- name: centos 确保cron服务安装
+  yum: name=cronie state=present 
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+#  register: result
+  tags: install_cronie
+
+#在一些centos系统上执行此模块报错，所以用命令的方式启动cron服务
+#- name: centos 确保cron服务启动
+#  service: name=crond state=started
+#  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" and result.rc == 0
+#  register: result
+#  tags: up_cron
+
+- name: centos 启动cron服务
+  shell: /etc/init.d/crond start
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+  tags: up_crond
+  
+- name: debian 确保crond服务安装
+  apt: name=cron state=present
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version == "8"
+  register: pkg_crond
+  tags: install_crond
+
+- name: debian 确保crond服务启动
+  service: name=cron state=started
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version == "8" and pkg_crond|success
+  tags: up_cron

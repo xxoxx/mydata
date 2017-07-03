@@ -1,0 +1,10 @@
+---
+# ansible主控端调用远程主机同步日志命令,使用说明：ansible-playbook data_sync.yml -e "host=172.31.11.70 bwlimit=1000"     bwlimit的单位是KBPS
+- hosts: '{{ host }}'
+  remote_user: '{{ ansible_ssh_user }}'
+
+  tasks:
+  - name: sync logs and bak
+    shell: /bin/bash data_sync.sh {{ bwlimit }}
+    args:
+      chdir: bin/

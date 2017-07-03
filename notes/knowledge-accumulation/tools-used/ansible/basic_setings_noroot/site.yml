@@ -1,0 +1,17 @@
+---
+#此脚本完成以非root用户设置的计划任务
+#日志同步计划任务使用：ansible-playbook -i hosts site.yml -e "M=  H=  bwlimit=  role=cron_logsrsync"  M mean minute,H mean hour
+#日志清理脚本调用：ansible-playbook -i hosts site.yml -e "role=logs_clear log_days=  bak_num= "   logs_days表示日志保留天数，bak_num表示项目备份保留份数
+#备份项目：ansible-playbook -i hosts site.yml -e "role=pull_project"
+- hosts: mod_server
+  remote_user: "{{ ansible_ssh_user }}"
+  roles:
+
+    #日志同步计划任务
+    - { role: cron_logsrsync,when: "role == 'cron_logsrsync'" }
+    #同步rsync shell脚本到远程主机
+    - { role: syncdata,when: "role == 'syncdata'" }
+    #copy日志清理脚本并设置计划任务执行
+    - { role: logs_clear,when: "role == 'logs_clear'" }
+    #备份项目并拉取到本地
+    - { role: pull_project,when: "role == 'pull_project'"}
