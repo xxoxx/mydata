@@ -1,0 +1,185 @@
+## ansible-playbook upgrade.yml -e "host=open-openoss user=tomcat instance=tomcat-7.0.54  project=openoss version=1.5.3 type=1"
+
+---
+# 对iov_mcms项目进行升级操作
+- hosts: '{{ host }}'
+  vars:
+     #代码库地址
+     pkg_path: /ftproot/packages/{{ project }}
+     #项目备份目录
+     bak_path: /home/{{ user }}/bak
+  #远程用户
+  remote_user: '{{ user }}'
+
+  tasks:
+  - name: print all variables
+#说明 类型1表示全量升级，2表示增量升级，3表示回滚，4表示升级验证通过后备份项目，5表示升级前备份项目。
+    debug: msg="Variables--> Host {{ host }},User {{ user }},Instance {{ instance }},Project {{ project }},Version {{ version }},Type {{ type }}"
+    when: "'{{ type }}' != '4' or '{{ type }}' != '5'"
+    tags: print_variables
+
+  - pause: prompt="To continue, please press Enter, stop please press Ctrl + c and then a"
+
+
+################# 升级部份 ###############################
+
+#全量升级
+#  - name: 检测传递变量的准确性
+#    shell: ls /home/{{ user }}/{{ instance }}/webapps | grep {{ project }}
+#    register: result
+#    tags: check
+
+#  - name: 远程主机无该项目则退出脚本
+#    debug: msg="您传递的变量已测试通过"
+#    when: result.rc == 1
+
+  - name: stop the java process before upgrade
+    shell: /bin/bash {{ ansible_env.HOME }}/bin/{{ project }}_stop
+    register: start_tomcat_before_upgrade
+    when: "'{{ type }}' != '4' and '{{ type }}' != '5' and '{{ type }}' != '3'"
+    tags: tomcat_stop
+    ignore_errors: yes
+
+#  - name: 配合tomcat停止脚本暂停6秒
+#    pause: seconds=6
+#    when: start_tomcat_before_upgrade.rc == 0
+    
+  - name: 全量升级,删除原项目
+    file: path=/home/{{ user }}/{{ instance }}/webapps/{{ item }} state=absent
+    with_items:
+        - '{{ project }}'
+        - '{{ project }}.war'
+    register: del
+    when: "'{{ type }}' == '1'"
+    tags: del_project
+
+  - name: 全量升级，下载全量包
+    synchronize: "src={{ pkg_path }}/{{ version }}/web/{{ project }} dest=/home/{{ user }}/{{ instance }}/webapps checksum=yes compress=yes perms=yes"
+    when: "'{{ type }}' == '1' and del|success"
+    tags: down_pkg
+
+#增量升级
+  - name: 增量升级，下载增量文件到tmp目录
+    synchronize: "src={{ pkg_path }}/{{ version }}/web/{{ project }} dest=/tmp checksum=yes compress=yes perms=yes"
+    when: "'{{ type }}' == '2'"
+    tags: down_file
+
+  - name: 增量升级，从临时目录把增量文件覆盖项目文件
+    command: cp -r /tmp/{{ project }} /home/{{ user }}/{{ instance }}/webapps
+    when: "'{{ type }}' == '2'"
+    tags: cover
+
+  - name: 增量升级，清理临时文件
+    file: path=/tmp/{{ project }} state=absent
+    when: "'{{ type }}' == '2'"
+    tags: clean
+  
+  - name: start tomcat after the upgrade
+    #使用shell来调用脚本启动tomcat是为了避免误两次执行playbook后启动两个同样的tomcat
+    shell: /usr/bin/nohup /bin/bash {{ ansible_env.HOME }}/bin/{{ project }}_start &
+    args:
+      chdir: "{{ ansible_env.HOME }}/bin"
+    environment:
+       'LANG': 'en_US.UTF-8'
+       'LC_CTYPE': 'en_US.UTF-8'
+    register: up_start
+    when: "'{{ type }}' == '1' or '{{ type }}' == '2'"
+    tags: tomcat_start
+
+  #启动tomcat后暂停15秒，主要是在全量升级后war包需要启动时解压，解压后才能执行下边的把版本号更新到记录版本的文件
+  - name: 升级启动tomcat后，暂停5秒
+    pause: seconds=15
+    when: up_start.rc == 0
+    ignore_errors: yes
+  
+  #创建存放版本号的文件
+  - name: create .version
+    file: path=/home/{{ user }}/{{ instance }}/webapps/{{ project }}/.version state=touch
+    when: "'{{ type }}' == '1'"
+    tags: create_version
+    
+  #更新版本号到语录版本的文件
+  - name: version stamp
+    shell: echo {{ version }} > /home/{{ user }}/{{ instance }}/webapps/{{ project }}/.version
+    when: "'{{ type }}' == '1' or '{{ type }}' == '2'"
+    tags: echo_version
+
+#  - name: 暂停5秒
+#    pause: seconds=5
+#    when: "'{{ type }}' == '1'"
+
+
+################## 回滚操作 ##################
+
+  - name: list backup project
+    shell: "ls /home/{{ user }}/bak | grep '{{ project }}'.'{{ version }}'.before"
+    register: result
+    ignore_errors: yes
+    when: "'{{ type }}' == '3'"
+
+  - name: print not exits project backup
+    debug: msg="您指定的版本没有相应的备份 {{ project }}.{{ version }}.before 不存在，无法进行回退操作。"
+    when: "'{{ type }}' == '3' and result|failed"
+
+  - name: stop the java process before roolback
+    shell: /bin/bash {{ ansible_env.HOME }}/bin/{{ project }}_stop
+    when: "'{{ type }}' == '3' and result|success"
+    tags: tomcat_stop
+    ignore_errors: yes
+
+  - name: 回滚操作时删除已升级的项目
+    file: path=/home/{{ user }}/{{ instance }}/webapps/{{ item }} state=absent
+    with_items:
+        - '{{ project }}'
+        - '{{ project }}.war'
+    register: del
+    when: "'{{ type }}' == '3' and result|success"
+    tags: del_project
+
+  - name: 回滚到指定版本项目
+    command: cp -r {{ bak_path }}/{{ project }}.{{ version }}.before /home/{{ user }}/{{ instance }}/webapps/{{ project }}
+    when: "'{{ type }}' == '3' and del|success and result|success"
+    tags: down_pkg
+
+  - name: after the rollback start tomcat
+    shell: /usr/bin/nohup /bin/bash {{ ansible_env.HOME }}/bin/{{ project }}_start &
+    args:
+      chdir: "{{ ansible_env.HOME }}/bin"
+    environment:
+       'LANG': 'en_US.UTF-8'
+       'LC_CTYPE': 'en_US.UTF-8'
+    register: rollback_start
+    when: "'{{ type }}' == '3' and result|success"
+    tags: tomcat_start
+
+  - name: 回滚版本启动tomcat后，暂停5秒
+    pause: seconds=5
+    when: rollback_start.rc == 0
+    ignore_errors: yes
+  
+  - name: create .version
+    file: path=/home/{{ user }}/{{ instance }}/webapps/{{ project }}/.version state=touch
+    when: "'{{ type }}' == '3'"
+    tags: create_version
+    
+  - name: version stamp
+    shell: echo {{ version }} > /home/{{ user }}/{{ instance }}/webapps/{{ project }}/.version
+    when: "'{{ type }}' == '3'"
+    tags: echo_version
+################## 备份项目 #################
+  - name: cat version
+    command: cat /home/{{ user }}/{{ instance }}/webapps/{{ project }}/.version
+    register: version_contents
+
+  - name: print now version
+    debug: msg={{ version_contents.stdout }}
+
+  - name: 升级验证通过后备份项目,备份文件格式："项目名称.版本号"
+    command: cp -r /home/{{ user }}/{{ instance }}/webapps/{{ project }} {{ bak_path }}/{{ project }}.{{ version_contents.stdout }}
+    when: "'{{ type  }}' == '4'"
+    tags: bak_after_upgrade
+
+  - name: 升级前备份项目,备份文件格式："项目名称.版本号.before"
+    command: cp -r /home/{{ user }}/{{ instance }}/webapps/{{ project }} {{ bak_path }}/{{ project }}.{{ version_contents.stdout }}.before
+    when: "'{{ type  }}' == '5'"
+    tags: upgrad_befor_bak

@@ -1,0 +1,47 @@
+---
+# ansible-playbook -i host -k test.yml -e "project=openoss version=1.2.3 port=5050"
+- hosts: mod_server
+  remote_user: root
+  vars:
+    tomcat_image: registry.docker.kartor.cn/apps/tomcat-v1
+    logs_dir: /home/tomcat/tomcat-7.0.54/logs
+  tasks:
+#  - name: create logs directyr
+#    file: path=/home/tomcat/tomcat-7.0.54 state=directory
+
+  - name: record version
+    file: path=/root/versions/{{ project }} state=directory recurse=yes
+
+  - name: pull image
+    docker_image: name={{ tomcat_image }}/{{ project }} tag={{ version }} state=present
+    tags: pull_image
+
+  - name: read version info
+    command: cat /root/versions/{{ project }}/version
+    register: read_version
+    tags: stop
+
+  - name: print version
+    debug: msg={{ read_version.stdout }}
+    ignore_errors: yes
+
+  - name: stop container
+    docker_container: name={{ project }}-{{ read_version.stdout }} state=stopped
+    tags: stop
+    ignore_errors: yes
+
+  - name: start container
+    docker_container:
+        name: "{{ project }}-{{ version }}"
+        image: "{{ tomcat_image }}/{{ project }}:{{ version }}"
+        ports:
+          - "{{ port }}:8080"
+        volumes:
+          - "{{ logs_dir }}:/usr/local/tomcat-7.0.54/logs"
+          - "/etc/hosts:/etc/hosts"
+        state: started
+    tags: start
+
+  - name: write version to /root/versions/
+    shell: echo {{ version }} > /root/versions/{{ project }}/version
+
