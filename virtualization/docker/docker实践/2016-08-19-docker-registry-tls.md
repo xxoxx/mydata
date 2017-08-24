@@ -200,9 +200,9 @@ registry.docker.kartor.cn:5000/thirdservice/registry   latest              c6c14
 可以得到注册服务中的信息，如下:
 
 
-![access_registry](/images/access-registry-api-01.jpg)
+![access_registry](images/access-registry-api-01.jpg)
 
-![access_registry](/images/access-registry-api-02.jpg)
+![access_registry](images/access-registry-api-02.jpg)
 
 这些信息应该做一下限制，registry提供了一个非常简单的基本认证功能，前提是registry已是基于TLS方式访问。操作如下：
 
