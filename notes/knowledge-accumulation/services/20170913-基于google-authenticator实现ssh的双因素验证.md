@@ -228,10 +228,13 @@ Sep 13 14:32:06 neal sshd[2772]: error: ssh_msg_send: write
 如果收到以上的错误,那请检查服务器的时区是否与你的手机所在的时区是一致的,且服务器与手机的时间是否正确.
 
 
->> 参考文档
+> 参考文档
 
 > http://shenyu.me/2016/09/05/centos-google-authenticator.html
+
 > http://www.it165.net/os/html/201605/17022.html
+
 > http://www.cnblogs.com/tiannan/p/6238832.html
+
 > https://github.com/google/google-authenticator-libpam
 
