@@ -242,11 +242,11 @@ docker run --entrypoint htpasswd registry:latest -Bbn testuser testpassword > au
 再来访问一下registry的API接口试试：
 
 
-![access_registry](/images/access-registry-api-auth-01.jpg)
+![access_registry](images/access-registry-api-auth-01.jpg)
 
 输入密码之后才能查看：
 
-![access_registry](/images/access-registry-api-auth-02.jpg)
+![access_registry](images/access-registry-api-auth-02.jpg)
 
 
 在之前另一个安装了CA证书的主机上试着push一个镜像：
