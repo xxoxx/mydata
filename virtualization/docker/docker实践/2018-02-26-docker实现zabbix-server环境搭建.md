@@ -602,6 +602,8 @@ agent端配置好后再到zabbix server的web配置增加监控主机测试，�
 
 server与agent已实现监控通讯的加密通讯。
 
+针对windows操作系统agent端，在官方网站[下载](https://www.zabbix.com/download_agents)的编译二进制包是不支持TLS加密通讯的，需要在[这里](https://support.zabbix.com/browse/ZBXNEXT-3047)下载支持TLS加密的二进制包。
+
 
 > 参考资料
 
