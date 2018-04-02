@@ -1,0 +1,7 @@
+# 监控相关资料
+https://share.zabbix.com/   								关于zabbix的监控资料可以这里查找
+https://share.zabbix.com/storage-devices/linux-disk-performance-monitoring             linux下磁盘性能监控
+https://github.com/cavaliercoder/zabbix-module-sockets					tcpsocket监控
+
+
+
