@@ -4,4 +4,16 @@ https://share.zabbix.com/storage-devices/linux-disk-performance-monitoring      
 https://github.com/cavaliercoder/zabbix-module-sockets					tcpsocket监控
 
 
+# web类开源项目
+
+nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
+
+
+# VIM类
+
+匹配IP地址： \v<((\d|\d{2}|1\d{2}|2[0-5][0-5])\.){3}(\d|\d{2}|1\d{2}|2[0-5][0-5])>  [参考](http://www.cnblogs.com/liubaocheng999/p/3277840.html)
+
+但这里有错误，在匹配IP的第四位时，如216,227,248，这样最后一个数字是超过5时，就不能匹配，所以优化后的正则如下：
+
+\v<((\d|\d{2}|1\d{2}|2[0-5][0-5])\.){3}(\d|\d{2}|1\d{2}|2[0-4]\d|25[0-4])>
 
