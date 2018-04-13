@@ -1,15 +1,16 @@
-# 监控相关资料
+## 监控相关资料
+
 https://share.zabbix.com/   								关于zabbix的监控资料可以这里查找
 https://share.zabbix.com/storage-devices/linux-disk-performance-monitoring             linux下磁盘性能监控
 https://github.com/cavaliercoder/zabbix-module-sockets					tcpsocket监控
 
 
-# web类开源项目
+## web类开源项目
 
 nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
 
 
-# VIM类
+## 文本操作类
 
 匹配IP地址： \v<((\d|\d{2}|1\d{2}|2[0-5][0-5])\.){3}(\d|\d{2}|1\d{2}|2[0-5][0-5])>  [参考](http://www.cnblogs.com/liubaocheng999/p/3277840.html)
 
