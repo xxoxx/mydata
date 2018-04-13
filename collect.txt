@@ -1,3 +1,10 @@
+## linux精典命令
+
+统计系统的各tcp状态的数量：
+
+netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
+
+
 ## 监控相关资料
 
 https://share.zabbix.com/   								关于zabbix的监控资料可以这里查找
@@ -18,3 +25,7 @@ nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
 
 \v<((\d|\d{2}|1\d{2}|2[0-5][0-5])\.){3}(\d|\d{2}|1\d{2}|2[0-4]\d|25[0-4])>
 
+
+## 安全相关
+
+杀毒软件：  https://www.avast.com/zh-cn/index
