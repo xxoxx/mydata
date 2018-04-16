@@ -29,3 +29,9 @@ nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
 ## 安全相关
 
 杀毒软件：  https://www.avast.com/zh-cn/index
+
+
+
+## 监控相关
+
+支持ssl的zabbi agent端：  https://support.zabbix.com/browse/ZBXNEXT-3047
