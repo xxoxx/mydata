@@ -14,8 +14,11 @@ https://github.com/cavaliercoder/zabbix-module-sockets					tcpsocket监控
 
 ## web类开源项目
 
-nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
-
+nginx正向代理：   https://github.com/chobits/ngx_http_proxy_connect_module
+php-fpm参数解释:  http://php.net/manual/zh/install.fpm.configuration.php
+php-fpmu的状态信息详解： 
+http://www.ttlsa.com/php/use-php-fpm-status-page-detail/
+https://easyengine.io/tutorials/php/fpm-status-page/
 
 ## 文本操作类
 
@@ -35,3 +38,9 @@ nginx正向代理：  https://github.com/chobits/ngx_http_proxy_connect_module
 ## 监控相关
 
 支持ssl的zabbi agent端：  https://support.zabbix.com/browse/ZBXNEXT-3047
+
+
+
+## 数据库相关
+
+redis图形化工具     https://redisdesktop.com/
