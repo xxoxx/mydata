@@ -32,7 +32,7 @@ https://easyengine.io/tutorials/php/fpm-status-page/
 ## 安全相关
 
 杀毒软件：  https://www.avast.com/zh-cn/index
-
+病毒样本检测：  http://f.virscan.org/language/zh-cn/dfsfrsHost.exe.html
 
 
 ## 监控相关
