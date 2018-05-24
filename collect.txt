@@ -7,9 +7,12 @@ netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
 
 ## 监控相关资料
 
-https://share.zabbix.com/   								关于zabbix的监控资料可以这里查找
-https://share.zabbix.com/storage-devices/linux-disk-performance-monitoring             linux下磁盘性能监控
-https://github.com/cavaliercoder/zabbix-module-sockets					tcpsocket监控
+支持ssl的zabbi agent端：  https://support.zabbix.com/browse/ZBXNEXT-3047
+关于zabbix的监控资料可以这里查找   https://share.zabbix.com/   			
+
+linux下磁盘性能监控  https://share.zabbix.com/storage-devices/linux-disk-performance-monitoring             
+tcpsocket监控        https://github.com/cavaliercoder/zabbix-module-sockets	
+windows下tcpping工具 https://download.elifulkerson.com/files/tcping/0.39/x64/
 
 
 ## web类开源项目
@@ -35,12 +38,18 @@ https://easyengine.io/tutorials/php/fpm-status-page/
 病毒样本检测：  http://f.virscan.org/language/zh-cn/dfsfrsHost.exe.html
 
 
-## 监控相关
-
-支持ssl的zabbi agent端：  https://support.zabbix.com/browse/ZBXNEXT-3047
 
 
 
 ## 数据库相关
 
 redis图形化工具     https://redisdesktop.com/
+mssql学习资料		https://msdn.microsoft.com/zh-cn/library/ee210427(v=sql.120).aspx
+mssql的python库		http://www.pymssql.org/en/stable/intro.html#getting-started
+
+
+## 远程连接工具
+
+各个平台远程桌面连接工具：
+https://www.parallels.com/products/ras/download/client/
+https://blog.csdn.net/g457499940/article/details/17008769
