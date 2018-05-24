@@ -64,3 +64,4 @@ chown -R mysql.mysql /opt/mysqldata/var
 在真正还原数据这一步时，也可以直接把`/opt/bak/2018-05-24_11-31-54`目录下的所有数据copy到`/opt/mysqldata/var`下，并修改相应的权限。最后启动mysqld服务，观察错误日志是否有错。
 
 
+在使用innobackupex命令进行全备份的备份目录下有一个`xtrabackup_info`文件，此文件中记录了在备份时获取到binlog和pos位置，可以利用它做从库的搭建。
